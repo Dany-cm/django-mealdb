@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Finder</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>window.ingredientsList = [{% for ingredient in ingredients %}'{{ ingredient.strIngredient }}'{% if not forloop.last %},{% endif %}{% endfor %}];</script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col items-center space-y-2">
+            <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 bg-clip-text text-transparent bg-300% animate-gradient">
+                Recipe Finder
+            </h1>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="recipeFinder()">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800">🔍 Search Recipes</h2>
+            <div class="relative">
+                <input 
+                    type="text"
+                    name="q"
+                    x-model="searchQuery"
+                    @input="filterSearchSuggestions()"
+                    placeholder="Search by meal name... (e.g., pasta, pizza, salad)"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition"
+                    autocomplete="off"
+                />
+                <div 
+                    x-show="showSearchSuggestions" 
+                    @click.outside="showSearchSuggestions = false"
+                    class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                    <template x-for="suggestion in searchSuggestions" :key="suggestion">
+                        <div 
+                            @click="selectSearchSuggestion(suggestion)"
+                            class="px-4 py-2 cursor-pointer hover:bg-orange-50 text-gray-700 border-b last:border-b-0">
+                            <span x-text="suggestion"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <button 
+                hx-get="{% url 'recipe:random' %}"
+                hx-target="#results-container"
+                hx-swap="innerHTML swap:1s"
+                class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white mt-5 px-6 py-2 rounded-lg transition transform hover:scale-105"
+            >
+                Random Meal
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">📁 Category</label>
+                <select 
+                    id="category-filter"
+                    x-model="categoryFilter"
+                    @change="applyFilter('category')"
+                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-sm">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.strCategory }}">{{ category.strCategory }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">🌍 Cuisine</label>
+                <select 
+                    id="area-filter"
+                    x-model="areaFilter"
+                    @change="applyFilter('area')"
+                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-sm">
+                    <option value="">All Cuisines</option>
+                    {% for area in areas %}
+                        <option value="{{ area.strArea }}">{{ area.strArea }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-4 relative z-20">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">🥘 Ingredient</label>
+                <input 
+                    type="text"
+                    id="ingredient-filter"
+                    x-model.debounce.300ms="ingredientFilter"
+                    @input="filterIngredientSuggestions()"
+                    placeholder="Type ingredient..."
+                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition text-sm"
+                    autocomplete="off"
+                />
+                <div 
+                    x-show="showIngredientSuggestions" 
+                    @click.outside="showIngredientSuggestions = false"
+                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg top-full left-0">
+                    <template x-for="suggestion in ingredientSuggestions" :key="suggestion">
+                        <div 
+                            @click="selectIngredientSuggestion(suggestion)"
+                            class="px-3 py-2 cursor-pointer hover:bg-orange-50 text-gray-700 border-b last:border-b-0 text-sm">
+                            <span x-text="suggestion"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-container">
+            <div class="text-center py-16">
+                <div class="inline-block">
+                    <p class="text-gray-500 text-lg font-medium">Search for a meal or select a filter to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% if categories %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 fade-in">
+        {% for category in categories %}
+            <div 
+                class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer"
+                hx-get="{% url 'recipe:category_meals' category.strCategory %}"
+                hx-target="#meal-results"
+                hx-swap="innerHTML transition:true">
+                <div class="aspect-square overflow-hidden">
+                    {% if category.strCategoryThumb %}
+                        <img 
+                            src="{{ category.strCategoryThumb }}" 
+                            alt="{{ category.strCategory }}"
+                            class="w-full h-full object-cover hover:scale-110 transition transform"
+                            loading="lazy"
+                        />
+                    {% else %}
+                        <div class="w-full h-full bg-orange-500 flex items-center justify-center text-4xl">
+                            🍽️
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="p-3 text-center">
+                    <p class="text-white font-semibold truncate">{{ category.strCategory }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-12">
+        <p class="text-gray-500">No categories found.</p>
+    </div>
+{% endif %}

@@ -1,0 +1,37 @@
+{% if meals %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 fade-in">
+        {% for meal in meals %}
+            <div class="bg-white rounded-xl overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer border border-gray-100"
+                 hx-get="{% url 'recipe:meal_detail' meal.idMeal %}"
+                 hx-target="#results-container"
+                 hx-swap="innerHTML transition:true">
+                <div class="aspect-square overflow-hidden bg-gray-200 relative">
+                    {% if meal.strMealThumb %}
+                        <img 
+                            src="{{ meal.strMealThumb }}" 
+                            alt="{{ meal.strMeal }}"
+                            class="w-full h-full object-cover hover:scale-110 transition transform"
+                            loading="lazy"
+                        />
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-gray-800 truncate text-sm">{{ meal.strMeal }}</h3>
+                    {% if meal.strCategory %}
+                        <p class="text-xs text-orange-600 font-medium mt-2">📁 {{ meal.strCategory }}</p>
+                    {% endif %}
+                    {% if meal.strArea %}
+                        <p class="text-xs text-blue-600 font-medium">🌍 {{ meal.strArea }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-16">
+        <div class="inline-block">
+            <p class="text-5xl mb-4">🔍</p>
+            <p class="text-gray-500 text-lg">No meals found. Try a different search or filter.</p>
+        </div>
+    </div>
+{% endif %}

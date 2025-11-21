@@ -1,0 +1,120 @@
+{% load recipe_tags %}
+{% if meal %}
+    <div class="fade-in">
+        <button 
+            id="back-to-results-btn"
+            class="mb-6 inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition text-sm font-medium">
+            ← Back to Results
+        </button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="flex items-start">
+                {% if meal.strMealThumb %}
+                    <img 
+                        src="{{ meal.strMealThumb }}" 
+                        alt="{{ meal.strMeal }}"
+                        class="w-full rounded-xl shadow-lg"
+                        loading="lazy"
+                    />
+                {% endif %}
+                
+                <script>
+                document.getElementById('back-to-results-btn').addEventListener('click', function() {
+                    const resultsContainer = document.getElementById('results-container');
+                    if (resultsContainer) {
+                        resultsContainer.innerHTML = '<div class="text-center py-16"><div class="inline-block"><p class="text-6xl mb-4">👨‍🍳</p><p class="text-gray-500 text-lg font-medium">Search for a meal or select a filter to get started</p></div></div>';
+                    }
+                });
+                </script>
+            </div>
+
+            <div>
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">{{ meal.strMeal }}</h2>
+                
+                <div class="flex flex-wrap gap-2 mb-6">
+                    {% if meal.strCategory %}
+                        <span class="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+                            📁 {{ meal.strCategory }}
+                        </span>
+                    {% endif %}
+                    {% if meal.strArea %}
+                        <span class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
+                            🌍 {{ meal.strArea }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-wrap gap-3 mb-6">
+                    {% if meal.strSource %}
+                        <a 
+                            href="{{ meal.strSource }}" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition font-medium text-sm"
+                        >
+                            📖 Source
+                        </a>
+                    {% endif %}
+                    {% if meal.strYoutube %}
+                        <a 
+                            href="{{ meal.strYoutube }}" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition font-medium text-sm"
+                        >
+                            📺 YouTube
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-50 to-yellow-50 p-4 rounded-xl border-2 border-orange-200">
+                    <h3 class="font-bold text-gray-800 mb-3">📋 Key Ingredients</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        {% with ingredients=meal|get_ingredients %}
+                            {% for ingredient in ingredients|slice:":6" %}
+                                {% if ingredient.name %}
+                                    <div class="text-sm text-gray-700">
+                                        <span class="font-medium">{{ ingredient.name }}</span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-white rounded-xl p-6 border-2 border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">👨‍🍳 Instructions</h3>
+                <div class="text-gray-700 leading-relaxed text-base whitespace-pre-line">
+                    {{ meal.strInstructions }}
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200 h-fit sticky top-24">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📋 Ingredients</h3>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    {% with ingredients=meal|get_ingredients %}
+                        {% for ingredient in ingredients %}
+                            {% if ingredient.name %}
+                                <div class="bg-white p-3 rounded-lg border border-orange-100 hover:border-orange-300 transition">
+                                    <div class="flex justify-between items-start gap-2">
+                                        <span class="font-medium text-gray-800 text-sm flex-1">{{ ingredient.name }}</span>
+                                        <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-1 rounded whitespace-nowrap">
+                                            {{ ingredient.measure }}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-12">
+        <p class="text-gray-500 text-lg">Meal not found</p>
+    </div>
+{% endif %}
